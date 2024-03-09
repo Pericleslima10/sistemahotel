@@ -18,10 +18,10 @@ void check_in_cliente()
     getchar(); // Limpa buffer de entrada
 
     // Função fictícia - implementar de acordo com a lógica de negócios
-   int i = buscaReserva(codigoReserva);
+   int encontrado = buscaReserva(codigoReserva, &hospedagem);
    FILE *arquivo = fopen("hospedagens.csv", "a");
 
-    if (i == 1)
+    if (encontrado)
     {
 
         printf("Check-in realizado com sucesso!\n");
@@ -81,11 +81,9 @@ void menu_hospedagem()
     } while (opcao != 9);
 }
 
-int buscaReserva(int codigoReserva)
-{
+int buscaReserva(int codigoReserva, Hospedagem *hospedagem) {
     FILE *arquivo = fopen("reservas.csv", "r");
-    if (!arquivo)
-    {
+    if (!arquivo) {
         printf("Arquivo reservas.csv não pode ser aberto.\n");
         return 0;
     }
@@ -93,21 +91,25 @@ int buscaReserva(int codigoReserva)
     char linha[256];
     int reservaEncontrada = 0;
 
-    while (fgets(linha, sizeof(linha), arquivo))
-    {
+    while (fgets(linha, sizeof(linha), arquivo)) {
         int codigo;
         char cpf[14]; // Tamanho do CPF com espaço para o terminador nulo
-        Hospedagem hospedagem;
-        // Supõe que o CPF está na segunda coluna e o código da reserva na primeira
-        if (sscanf(linha, "%d;%14[^;];", &codigo, cpf) == 2)
-        {
-            if (codigo == codigoReserva)
-            {
+        char data_checkin[11], data_checkout[11], tipo_quarto[10];
+        int codigo_quarto;
+        
+        // Atualizado para ler todos os campos do CSV
+        if (sscanf(linha, "%d;%13[^;];%10[^;];%10[^;];%9[^;];%d",
+                   &codigo, cpf, data_checkin, data_checkout, tipo_quarto, &codigo_quarto) == 6) {
+            if (codigo == codigoReserva) {
                 reservaEncontrada = 1;
-                strcpy(hospedagem.cpf_cliente, cpf);
-                strcpy(hospedagem.status, "Ativa");
-                hospedagem.id_reserva = codigo;
-                hospedagem.data_check_in = hoje();
+                hospedagem->id_reserva = codigo;
+                strcpy(hospedagem->cpf_cliente, cpf);
+                // Outros campos podem ser preenchidos conforme necessário
+                hospedagem->data_check_in = hoje(); // Atribuição direta assume que hoje() retorna uma struct DATA
+                strcpy(hospedagem->status, "Ativa");
+                tornarQuartoIndisponivel(codigo_quarto);
+                // Presume-se que preço total será calculado em outro ponto do processo
+                hospedagem->preco_total = 0.0;
                 break;
             }
         }
@@ -117,9 +119,30 @@ int buscaReserva(int codigoReserva)
     return reservaEncontrada;
 }
 
-Quarto buscaQuartoPorId(int codigoQuarto)
-{
+void tornarQuartoIndisponivel(int codigoQuarto) {
+    FILE *arquivo = fopen("quartos.csv", "r+");
+    if (!arquivo) {
+        printf("Não foi possível abrir o arquivo dos quartos.\n");
+        return;
+    }
 
-    Quarto quarto;
-    return quarto;
+    char linha[256];
+    long posicaoAnterior;
+    int id, solteiro, casal, status;
+    char tipo[10];
+    float preco;
+
+    while (fgets(linha, sizeof(linha), arquivo)) {
+        posicaoAnterior = ftell(arquivo) - strlen(linha) - 1; // Guarda a posição antes de ler a linha
+        sscanf(linha, "%d;%d;%d;%9[^;];%f;%d", &id, &solteiro, &casal, tipo, &preco, &status);
+        
+        if (id == codigoQuarto) {
+            fseek(arquivo, posicaoAnterior, SEEK_SET); // Retorna à posição inicial da linha
+            fprintf(arquivo, "%d;%d;%d;%s;%.2f;0\n", id, solteiro, casal, tipo, preco); // Escreve a linha com status 0
+            printf("Quarto %d tornou-se indisponível.\n", codigoQuarto);
+            break;
+        }
+    }
+
+    fclose(arquivo);
 }
