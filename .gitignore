@@ -1,1 +1,6 @@
 .vscode/
+cliente.o
+main.o
+quartos.o
+hospedagem.o
+reserva.o

@@ -4,14 +4,7 @@
 #include <string.h>
 #define TAM 2
 
-typedef struct {
-    int codigo_quarto;
-    int camas_solteiro;
-    int camas_casal;
-    char tipo_quarto[6];
-    double preco_diaria;
-    char status[1];
-} Quarto;
+
 
 void quartos() {
     int opcao1;
