@@ -6,7 +6,7 @@
 #include "tempo.h"
 typedef struct {
     int id_reserva;          // Identificação da reserva
-    char cpf_cliente[14];    // CPF do cliente, assumindo 11 dígitos + terminador nulo
+    char cpf_cliente[14];    // CPF do cliente, assumindo 13 dígitos + terminador nulo
     DATA data_check_in;      // Data do check-in
     DATA data_check_out;     // Data do check-out
     char status[10];         // Status da hospedagem, por exemplo "Ativa" ou "Finalizada"
@@ -17,5 +17,6 @@ void check_in_cliente();
 void check_out_cliente();
 void buscar_hospedagens_cliente();
 void menu_hospedagem();
+int buscaReserva(int codigoReserva);
 
 #endif // HOSPEDAGEM_H_INCLUDED
