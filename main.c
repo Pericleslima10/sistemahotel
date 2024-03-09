@@ -27,9 +27,9 @@
 //     return 0;
 // }
 
-#include "cliente.c"
-#include "quartos.c"
-#include "reserva.c"
+#include "cliente.h"
+#include "quartos.h"
+#include "reserva.h"
 #include "hospedagem.h"
 #include <stdio.h>
 #include <stdlib.h>

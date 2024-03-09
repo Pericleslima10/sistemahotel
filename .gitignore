@@ -4,3 +4,4 @@ main.o
 quartos.o
 hospedagem.o
 reserva.o
+main.exe

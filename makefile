@@ -3,7 +3,7 @@ CFLAGS=-Wall -Wextra -g3
 OBJ=main.o cliente.o quartos.o reserva.o hospedagem.o
 EXE=main.exe
 SRC_DIR=c:\Users\aliss\Documents\sistemahotel
-BIN_DIR=c:\Users\aliss\Documents\sistemahotel\output
+BIN_DIR=c:\Users\aliss\Documents\sistemahotel
 
 # Linkar os objetos para criar o executável
 $(EXE): $(OBJ)
