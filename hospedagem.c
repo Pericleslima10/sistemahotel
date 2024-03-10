@@ -1,9 +1,11 @@
 #include "hospedagem.h"
 #include "reserva.h"
 #include "quartos.h"
+#include "tempo.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 void check_in_cliente()
 {
@@ -23,8 +25,9 @@ void check_in_cliente()
 
     if (encontrado)
     {
-
+        char data_check_in[13];
         printf("Check-in realizado com sucesso!\n");
+        DataToString(hospedagem.data_check_in, &data_check_in, true);
         fprintf(arquivo, "%d;%s;%s;%s;%s;%f\n", hospedagem.id_reserva, hospedagem.cpf_cliente, hospedagem.data_check_in, "", hospedagem.status, 0.0);                 
     }
     else

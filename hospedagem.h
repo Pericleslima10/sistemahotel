@@ -17,6 +17,7 @@ void check_in_cliente();
 void check_out_cliente();
 void buscar_hospedagens_cliente();
 void menu_hospedagem();
-int buscaReserva(int codigoReserva);
+int buscaReserva(int codigoReserva, Hospedagem *hospedagem);
+void tornarQuartoIndisponivel(int codigoQuarto);
 
 #endif // HOSPEDAGEM_H_INCLUDED
