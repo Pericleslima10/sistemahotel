@@ -18,6 +18,11 @@ void check_out_cliente();
 void buscar_hospedagens_cliente();
 void menu_hospedagem();
 int buscaReserva(int codigoReserva, Hospedagem *hospedagem);
-void tornarQuartoIndisponivel(int codigoQuarto);
+void atualizarStatusQuarto(int codigoQuarto, char novoStatus[2]);
+int quantidadeHospedagensCSV();
+int obterIdQuarto(int idReserva);
+float obterPrecoDiariaQuarto(int idQuarto);
+double calcularPrecoTotal(int idReserva, double diaria);
+void finalizarHospedagem(int idReserva, double precoTotal);
 
 #endif // HOSPEDAGEM_H_INCLUDED

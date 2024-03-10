@@ -20,15 +20,15 @@ void check_in_cliente()
     getchar(); // Limpa buffer de entrada
 
     // Função fictícia - implementar de acordo com a lógica de negócios
-   int encontrado = buscaReserva(codigoReserva, &hospedagem);
-   FILE *arquivo = fopen("hospedagens.csv", "a");
+    int encontrado = buscaReserva(codigoReserva, &hospedagem);
+    FILE *arquivo = fopen("hospedagens.csv", "a");
 
     if (encontrado)
     {
         char data_check_in[13];
         printf("Check-in realizado com sucesso!\n");
-        DataToString(hospedagem.data_check_in, &data_check_in, true);
-        fprintf(arquivo, "%d;%s;%s;%s;%s;%f\n", hospedagem.id_reserva, hospedagem.cpf_cliente, hospedagem.data_check_in, "", hospedagem.status, 0.0);                 
+        DataToString(hospedagem.data_check_in, &data_check_in, false);
+        fprintf(arquivo, "%d;%s;%s;%s;%s;%f\n", hospedagem.id_reserva, hospedagem.cpf_cliente, hospedagem.data_check_in, "", hospedagem.status, 0.0);
     }
     else
     {
@@ -41,6 +41,18 @@ void check_out_cliente()
     // Implementação para o check-out do cliente
     // Deve calcular o valor total da estadia, atualizar o status do quarto e finalizar a hospedagem
     printf("Realizando check-out do cliente.\n");
+    int idReserva;
+    printf("Digite o código da reserva para check-out: ");
+    scanf("%d", &idReserva);
+    getchar(); // Limpa buffer de entrada
+
+    int tamHospedagens = quantidadeHospedagensCSV();
+    Hospedagem hospedagens[tamHospedagens];
+    int idQuarto = obterIdQuarto(idReserva);
+    double diaria = obterPrecoDiariaQuarto(idQuarto);
+    atualizarStatusQuarto(idQuarto, "A");
+    double precoTotal = calcularPrecoTotal(idReserva, diaria);
+    finalizarHospedagem(idReserva, precoTotal);
 }
 
 void buscar_hospedagens_cliente()
@@ -84,9 +96,11 @@ void menu_hospedagem()
     } while (opcao != 9);
 }
 
-int buscaReserva(int codigoReserva, Hospedagem *hospedagem) {
+int buscaReserva(int codigoReserva, Hospedagem *hospedagem)
+{
     FILE *arquivo = fopen("reservas.csv", "r");
-    if (!arquivo) {
+    if (!arquivo)
+    {
         printf("Arquivo reservas.csv não pode ser aberto.\n");
         return 0;
     }
@@ -94,23 +108,26 @@ int buscaReserva(int codigoReserva, Hospedagem *hospedagem) {
     char linha[256];
     int reservaEncontrada = 0;
 
-    while (fgets(linha, sizeof(linha), arquivo)) {
+    while (fgets(linha, sizeof(linha), arquivo))
+    {
         int codigo;
         char cpf[14]; // Tamanho do CPF com espaço para o terminador nulo
         char data_checkin[11], data_checkout[11], tipo_quarto[10];
         int codigo_quarto;
-        
+
         // Atualizado para ler todos os campos do CSV
         if (sscanf(linha, "%d;%13[^;];%10[^;];%10[^;];%9[^;];%d",
-                   &codigo, cpf, data_checkin, data_checkout, tipo_quarto, &codigo_quarto) == 6) {
-            if (codigo == codigoReserva) {
+                   &codigo, cpf, data_checkin, data_checkout, tipo_quarto, &codigo_quarto) == 6)
+        {
+            if (codigo == codigoReserva)
+            {
                 reservaEncontrada = 1;
                 hospedagem->id_reserva = codigo;
                 strcpy(hospedagem->cpf_cliente, cpf);
                 // Outros campos podem ser preenchidos conforme necessário
                 hospedagem->data_check_in = hoje(); // Atribuição direta assume que hoje() retorna uma struct DATA
                 strcpy(hospedagem->status, "Ativa");
-                tornarQuartoIndisponivel(codigo_quarto);
+                atualizarStatusQuarto(codigo_quarto, "I");
                 // Presume-se que preço total será calculado em outro ponto do processo
                 hospedagem->preco_total = 0.0;
                 break;
@@ -122,30 +139,208 @@ int buscaReserva(int codigoReserva, Hospedagem *hospedagem) {
     return reservaEncontrada;
 }
 
-void tornarQuartoIndisponivel(int codigoQuarto) {
+void atualizarStatusQuarto(int codigoQuarto, char novoStatus[2])
+{
     FILE *arquivo = fopen("quartos.csv", "r+");
-    if (!arquivo) {
+    if (!arquivo)
+    {
         printf("Não foi possível abrir o arquivo dos quartos.\n");
         return;
     }
 
     char linha[256];
     long posicaoAnterior;
-    int id, solteiro, casal, status;
-    char tipo[10];
+    int id, solteiro, casal;
+    char tipo[10], status[2];
     float preco;
 
-    while (fgets(linha, sizeof(linha), arquivo)) {
+    while (fgets(linha, sizeof(linha), arquivo))
+    {
         posicaoAnterior = ftell(arquivo) - strlen(linha) - 1; // Guarda a posição antes de ler a linha
-        sscanf(linha, "%d;%d;%d;%9[^;];%f;%d", &id, &solteiro, &casal, tipo, &preco, &status);
-        
-        if (id == codigoQuarto) {
-            fseek(arquivo, posicaoAnterior, SEEK_SET); // Retorna à posição inicial da linha
-            fprintf(arquivo, "%d;%d;%d;%s;%.2f;0\n", id, solteiro, casal, tipo, preco); // Escreve a linha com status 0
-            printf("Quarto %d tornou-se indisponível.\n", codigoQuarto);
+        sscanf(linha, "%d;%d;%d;%9[^;];%f;%1s", &id, &solteiro, &casal, tipo, &preco, status);
+
+        if (id == codigoQuarto)
+        {
+            fseek(arquivo, posicaoAnterior, SEEK_SET);
+            fprintf(arquivo, "%d;%d;%d;%s;%.2f;%s\n", id, solteiro, casal, tipo, preco, novoStatus == 'A' ? "A" : "I");
+            printf("Status do quarto %d atualizado para %c.\n", codigoQuarto, novoStatus);
             break;
         }
     }
 
     fclose(arquivo);
+}
+
+int quantidadeHospedagensCSV()
+{
+    char nomeArquivo[] = "Hospedagens.csv";
+    FILE *csv;
+    char linha[1000];
+    csv = fopen(nomeArquivo, "r");
+    if (csv != NULL)
+    {
+        // lendo o cabeçalho do arquivo
+        fscanf(csv, " %[^\n]s", linha);
+        int contadorLinha = 0;
+        while (fscanf(csv, " %[^\n]s", linha) != EOF)
+        {
+            contadorLinha++;
+        }
+        fclose(csv);
+        return contadorLinha;
+    }
+    else
+    {
+        // arquivo não existe
+        return 0;
+    }
+}
+
+int obterIdQuarto(int idReserva)
+{
+    FILE *arquivo = fopen("reservas.csv", "r");
+    if (arquivo == NULL)
+    {
+        perror("Não foi possível abrir o arquivo de reservas");
+        return 0; // Retorna -1 para indicar erro
+    }
+
+    char linha[1024];
+    int id, codigoQuarto;
+    char buffer[1024]; // Buffer para ler os outros campos que não serão utilizados
+
+    // Lê cada linha do arquivo de reservas
+    while (fgets(linha, sizeof(linha), arquivo))
+    {
+        // A função sscanf vai ler o ID da reserva e pular os outros campos até chegar no código do quarto
+        if (sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^;];%d", &id, buffer, buffer, buffer, buffer, &codigoQuarto) == 6)
+        {
+            if (id == idReserva)
+            {
+                fclose(arquivo);
+                return codigoQuarto; // Retorna o ID do quarto
+            }
+        }
+    }
+
+    fclose(arquivo);
+    return 0;
+}
+
+float obterPrecoDiariaQuarto(int idQuarto)
+{
+    FILE *arquivo = fopen("quartos.csv", "r");
+    if (arquivo == NULL)
+    {
+        perror("Não foi possível abrir o arquivo de quartos");
+        return 0.0f;
+    }
+
+    char linha[1024];
+    int id;
+    int solteiro, casal; // Presumindo que estes são inteiros
+    char tipo[10];
+    float preco;
+    char status[2]; // Presumindo que status é uma string "0" ou "1"
+
+    // Lê cada linha do arquivo de quartos
+    while (fgets(linha, sizeof(linha), arquivo))
+    {
+        if (sscanf(linha, "%d;%d;%d;%[^;];%f;%s", &id, &solteiro, &casal, tipo, &preco, status) == 6)
+        {
+            if (id == idQuarto)
+            {
+                fclose(arquivo);
+                return preco; // Retorna o preço da diária do quarto
+            }
+        }
+    }
+
+    fclose(arquivo);
+    return 0.0f; // Retorna 0.0 se o quarto não foi encontrado
+}
+
+double calcularPrecoTotal(int idReserva, double diaria)
+{
+    FILE *arquivo = fopen("hospedagem.csv", "r");
+    if (arquivo == NULL)
+    {
+        printf("Não foi possível abrir o arquivo de hospedagens.\n");
+        return;
+    }
+
+    char linha[256];
+    int id;
+    DATA dataCheckIn, dataCheckOut;
+    double precoTotal;
+    char cpfCliente[15], status[10], dataInStr[11], dataOutStr[11];
+
+    while (fgets(linha, sizeof(linha), arquivo) != NULL)
+    {
+        sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^;];%lf", &id, cpfCliente, dataInStr, dataOutStr, status, &precoTotal);
+        if (id == idReserva)
+        {
+            StringToData(dataInStr, &dataCheckIn);
+            StringToData(dataOutStr, &dataCheckOut);
+            int dias = DataDiff(dataCheckIn, hoje());
+            return precoTotal = dias * diaria;
+        }
+    }
+
+    fclose(arquivo);
+}
+
+void finalizarHospedagem(int idReserva, double precoTotal)
+{
+    FILE *arquivoLeitura = fopen("hospedagem.csv", "r");
+    FILE *arquivoEscrita = fopen("hospedagem_temp.csv", "w");
+
+    if (!arquivoLeitura || !arquivoEscrita)
+    {
+        perror("Erro ao abrir arquivos");
+        exit(1);
+    }
+
+    char linha[256];
+    int id;
+    DATA dataCheckOut = hoje();
+    char dataCheckOutStr[11]; // Formato DD/MM/AAAA
+
+    // Converte DATA para string
+    DataToString(dataCheckOut, dataCheckOutStr, false);
+
+    // Lê o arquivo original linha por linha
+    while (fgets(linha, sizeof(linha), arquivoLeitura) != NULL)
+    {
+        sscanf(linha, "%d;", &id);
+        if (id == idReserva)
+        {
+            // Substitui a linha pela versão atualizada
+            char *token = strtok(linha, ";"); // ID Reserva
+            fprintf(arquivoEscrita, "%s;", token);
+
+            for (int i = 0; i < 4; i++)
+            { // Avança até o campo STATUS
+                token = strtok(NULL, ";");
+                fprintf(arquivoEscrita, "%s;", token);
+            }
+
+            // Insere DATA CHECKOUT, STATUS e PREÇO TOTAL
+            fprintf(arquivoEscrita, "%s;Finalizada;%.2f\n", dataCheckOutStr, precoTotal);
+        }
+        else
+        {
+            // Copia a linha como está para o arquivo temporário
+            fputs(linha, arquivoEscrita);
+        }
+    }
+
+    fclose(arquivoLeitura);
+    fclose(arquivoEscrita);
+
+    // Substitui o arquivo original pelo temporário
+    remove("hospedagem.csv");
+    rename("hospedagem_temp.csv", "hospedagem.csv");
+
+    printf("Hospedagem finalizada com sucesso.\n");
 }
