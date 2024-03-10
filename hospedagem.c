@@ -60,6 +60,43 @@ void buscar_hospedagens_cliente()
     // Implementação para buscar as hospedagens de um cliente
     // Deve pedir o CPF do cliente e mostrar todas as hospedagens relacionadas
     printf("Buscando hospedagens do cliente.\n");
+    printf("Digite o CPF do cliente: ");
+    char cpf[13];
+    scanf("%14s", cpf);
+    FILE *arquivo = fopen("hospedagem.csv", "r");
+    if (arquivo == NULL)
+    {
+        printf("Erro ao abrir o arquivo de hospedagens.\n");
+        return;
+    }
+
+    Hospedagem hospedagem;
+    char linha[256];
+    int encontrou = 0;
+
+    printf("Hospedagens para o CPF %s:\n", cpf);
+    while (fgets(linha, sizeof(linha), arquivo))
+    {
+        // Assume que a linha tenha o formato correto e não faça verificações de erros
+        sscanf(linha, "%d;%[^;];%[^;];%[^;];%lf\n",
+               &hospedagem.id_reserva, hospedagem.cpf_cliente, hospedagem.data_check_in, hospedagem.data_check_out, &hospedagem.preco_total);
+
+        if (strcmp(hospedagem.cpf_cliente, cpf) == 0)
+        {
+            encontrou = 1;
+            printf("Reserva ID: %d\n", hospedagem.id_reserva);
+            printf("Data de check-in: %s\n", hospedagem.data_check_in);
+            printf("Data de check-out: %s\n", hospedagem.data_check_out);
+            printf("Valor pago: %.2f\n\n", hospedagem.preco_total);
+        }
+    }
+
+    if (!encontrou)
+    {
+        printf("Nenhuma hospedagem encontrada para o CPF fornecido.\n");
+    }
+
+    fclose(arquivo);
 }
 
 void menu_hospedagem()
