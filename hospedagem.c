@@ -22,6 +22,11 @@ void check_in_cliente()
     // Função fictícia - implementar de acordo com a lógica de negócios
     int encontrado = buscaReserva(codigoReserva, &hospedagem);
     FILE *arquivo = fopen("hospedagens.csv", "a");
+    if (arquivo == NULL)
+    {
+        printf("Erro ao abrir o arquivo de hospedagens.\n");
+        return;
+    }
 
     if (encontrado)
     {
