@@ -27,8 +27,8 @@ void check_in_cliente()
     {
         char data_check_in[13];
         printf("Check-in realizado com sucesso!\n");
-        DataToString(hospedagem.data_check_in, &data_check_in, false);
-        fprintf(arquivo, "%d;%s;%s;%s;%s;%f\n", hospedagem.id_reserva, hospedagem.cpf_cliente, hospedagem.data_check_in, "", hospedagem.status, 0.0);
+        DataToString(hospedagem.data_check_in, data_check_in, false);
+        fprintf(arquivo, "%d;%s;%s;%s;%s;%f\n", hospedagem.id_reserva, hospedagem.cpf_cliente, data_check_in, "", hospedagem.status, 0.0);
     }
     else
     {
@@ -45,12 +45,9 @@ void check_out_cliente()
     printf("Digite o código da reserva para check-out: ");
     scanf("%d", &idReserva);
     getchar(); // Limpa buffer de entrada
-
-    int tamHospedagens = quantidadeHospedagensCSV();
-    Hospedagem hospedagens[tamHospedagens];
     int idQuarto = obterIdQuarto(idReserva);
     double diaria = obterPrecoDiariaQuarto(idQuarto);
-    atualizarStatusQuarto(idQuarto, "A");
+    atualizarStatusQuarto(idQuarto, 'A');
     double precoTotal = calcularPrecoTotal(idReserva, diaria);
     finalizarHospedagem(idReserva, precoTotal);
 }
@@ -73,20 +70,22 @@ void buscar_hospedagens_cliente()
     Hospedagem hospedagem;
     char linha[256];
     int encontrou = 0;
+    char checkIn[11];
+    char checkOut[11];
 
     printf("Hospedagens para o CPF %s:\n", cpf);
     while (fgets(linha, sizeof(linha), arquivo))
     {
         // Assume que a linha tenha o formato correto e não faça verificações de erros
         sscanf(linha, "%d;%[^;];%[^;];%[^;];%lf\n",
-               &hospedagem.id_reserva, hospedagem.cpf_cliente, hospedagem.data_check_in, hospedagem.data_check_out, &hospedagem.preco_total);
+               &hospedagem.id_reserva, hospedagem.cpf_cliente, checkIn, checkOut, &hospedagem.preco_total);
 
         if (strcmp(hospedagem.cpf_cliente, cpf) == 0)
         {
             encontrou = 1;
             printf("Reserva ID: %d\n", hospedagem.id_reserva);
-            printf("Data de check-in: %s\n", hospedagem.data_check_in);
-            printf("Data de check-out: %s\n", hospedagem.data_check_out);
+            printf("Data de check-in: %s\n", checkIn);
+            printf("Data de check-out: %s\n", checkOut);
             printf("Valor pago: %.2f\n\n", hospedagem.preco_total);
         }
     }
@@ -161,10 +160,9 @@ int buscaReserva(int codigoReserva, Hospedagem *hospedagem)
                 reservaEncontrada = 1;
                 hospedagem->id_reserva = codigo;
                 strcpy(hospedagem->cpf_cliente, cpf);
-                // Outros campos podem ser preenchidos conforme necessário
-                hospedagem->data_check_in = hoje(); // Atribuição direta assume que hoje() retorna uma struct DATA
                 strcpy(hospedagem->status, "Ativa");
-                atualizarStatusQuarto(codigo_quarto, "I");
+                hospedagem->data_check_in = hoje();
+                atualizarStatusQuarto(codigo_quarto, 'I');
                 // Presume-se que preço total será calculado em outro ponto do processo
                 hospedagem->preco_total = 0.0;
                 break;
@@ -176,7 +174,7 @@ int buscaReserva(int codigoReserva, Hospedagem *hospedagem)
     return reservaEncontrada;
 }
 
-void atualizarStatusQuarto(int codigoQuarto, char novoStatus[2])
+void atualizarStatusQuarto(int codigoQuarto, char novoStatus)
 {
     FILE *arquivo = fopen("quartos.csv", "r+");
     if (!arquivo)
@@ -199,8 +197,7 @@ void atualizarStatusQuarto(int codigoQuarto, char novoStatus[2])
         if (id == codigoQuarto)
         {
             fseek(arquivo, posicaoAnterior, SEEK_SET);
-            fprintf(arquivo, "%d;%d;%d;%s;%.2f;%s\n", id, solteiro, casal, tipo, preco, novoStatus == 'A' ? "A" : "I");
-            printf("Status do quarto %d atualizado para %c.\n", codigoQuarto, novoStatus);
+            fprintf(arquivo, "%d;%d;%d;%s;%.2f;%c\n", id, solteiro, casal, tipo, preco, novoStatus);
             break;
         }
     }
@@ -303,7 +300,7 @@ double calcularPrecoTotal(int idReserva, double diaria)
     if (arquivo == NULL)
     {
         printf("Não foi possível abrir o arquivo de hospedagens.\n");
-        return;
+        return 0.0;
     }
 
     char linha[256];
@@ -325,6 +322,7 @@ double calcularPrecoTotal(int idReserva, double diaria)
     }
 
     fclose(arquivo);
+    return 0.0;
 }
 
 void finalizarHospedagem(int idReserva, double precoTotal)

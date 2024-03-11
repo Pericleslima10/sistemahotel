@@ -18,7 +18,7 @@ void check_out_cliente();
 void buscar_hospedagens_cliente();
 void menu_hospedagem();
 int buscaReserva(int codigoReserva, Hospedagem *hospedagem);
-void atualizarStatusQuarto(int codigoQuarto, char novoStatus[2]);
+void atualizarStatusQuarto(int codigoQuarto, char novoStatus);
 int quantidadeHospedagensCSV();
 int obterIdQuarto(int idReserva);
 float obterPrecoDiariaQuarto(int idQuarto);
