@@ -4,29 +4,12 @@
 #include "reserva.h"
 #include "cliente.h"
 #include "quartos.h"
-
-
-
 #define TAM_MAXIMO 100
 #define TAM_CPF 12
-
-
-
-typedef struct {
-    int codigo_reserva;
-    char cpf_reserva[12];
-    int data_checkin;
-    int data_checkout;
-    char tipo_quarto[6];
-    int codigo_quarto;
-} Reserva;
 
 // Array para armazenar os clientes
 Cliente clientesteste[TAM_MAXIMO];
 int num_clientes = 0;
-
-
-
 
 void reservas(){
    // Verifica se o arquivo existe, se não existir, cria-o
@@ -120,15 +103,10 @@ void verificarCpf() {
 
         fazerReserva();
 
-
-
-
     } else {
         printf("Cliente não encontrado.\n");
     }
 }
-
-
 void criarArquivoReservas() {
 	//verica se o arquivo ja existi
     FILE *arquivo = fopen("reservas.csv", "w");
