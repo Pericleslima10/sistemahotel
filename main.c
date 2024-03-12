@@ -27,10 +27,10 @@
 //     return 0;
 // }
 
-#include "cliente.c"
-#include "quartos.c"
-#include "reserva.c"
-
+#include "cliente.h"
+#include "quartos.h"
+#include "reserva.h"
+#include "hospedagem.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -67,7 +67,7 @@ int main() {
                 break;
             case 3:
                 //listarQuartos();
-                //hospedagem();
+                menu_hospedagem();
                 break;
             case 4:
                 //listarQuartos();

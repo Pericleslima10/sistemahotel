@@ -7,15 +7,6 @@
 #define TAM 2
 
 
-typedef struct {
-    char nome_cliente[50];
-    char cpf_cliente[13];
-    int data_nasc;
-    int idade_cliente;
-    char endereco[100];
-    char cidade[100];
-    char estado[2];
-} Cliente;
 
 
 
