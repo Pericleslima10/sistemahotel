@@ -65,7 +65,7 @@ void buscar_hospedagens_cliente()
     printf("Digite o CPF do cliente: ");
     char cpf[13];
     scanf("%14s", cpf);
-    FILE *arquivo = fopen("hospedagem.csv", "r");
+    FILE *arquivo = fopen("hospedagens.csv", "r");
     if (arquivo == NULL)
     {
         printf("Erro ao abrir o arquivo de hospedagens.\n");
@@ -301,7 +301,7 @@ float obterPrecoDiariaQuarto(int idQuarto)
 
 double calcularPrecoTotal(int idReserva, double diaria)
 {
-    FILE *arquivo = fopen("hospedagem.csv", "r");
+    FILE *arquivo = fopen("hospedagens.csv", "r");
     if (arquivo == NULL)
     {
         printf("Não foi possível abrir o arquivo de hospedagens.\n");
@@ -332,7 +332,7 @@ double calcularPrecoTotal(int idReserva, double diaria)
 
 void finalizarHospedagem(int idReserva, double precoTotal)
 {
-    FILE *arquivoLeitura = fopen("hospedagem.csv", "r");
+    FILE *arquivoLeitura = fopen("hospedagens.csv", "r");
     FILE *arquivoEscrita = fopen("hospedagem_temp.csv", "w");
 
     if (!arquivoLeitura || !arquivoEscrita)
@@ -379,8 +379,8 @@ void finalizarHospedagem(int idReserva, double precoTotal)
     fclose(arquivoEscrita);
 
     // Substitui o arquivo original pelo temporário
-    remove("hospedagem.csv");
-    rename("hospedagem_temp.csv", "hospedagem.csv");
+    remove("hospedagens.csv");
+    rename("hospedagem_temp.csv", "hospedagens.csv");
 
     printf("Hospedagem finalizada com sucesso.\n");
 }
