@@ -156,7 +156,7 @@ int buscaReserva(int codigoReserva, Hospedagem *hospedagem)
         int codigo_quarto;
 
         // Atualizado para ler todos os campos do CSV
-        if (sscanf(linha, "%d;%13[^;];%10[^;];%10[^;];%9[^;];%d",
+        if (sscanf(linha, "%d;%11[^;];%10[^;];%10[^;];%9[^;];%d",
                    &codigo, cpf, data_checkin, data_checkout, tipo_quarto, &codigo_quarto) == 6)
         {
             if (codigo == codigoReserva)
@@ -312,7 +312,7 @@ double calcularPrecoTotal(int idReserva, double diaria)
     int id;
     DATA dataCheckIn, dataCheckOut;
     double precoTotal;
-    char cpfCliente[15], status[10], dataInStr[11], dataOutStr[11];
+    char cpfCliente[12], status[10], dataInStr[11], dataOutStr[11];
 
     while (fgets(linha, sizeof(linha), arquivo) != NULL)
     {
@@ -362,7 +362,7 @@ void finalizarHospedagem(int idReserva, double precoTotal)
     char linhaAtualizada[256]; // Para armazenar a linha modificada
     DATA dataCheckOut = hoje();
     char dataCheckOutStr[11]; // Formato DD/MM/AAAA
-    char cpfCliente[14], dataCheckInStr[11];
+    char cpfCliente[12], dataCheckInStr[11];
     // Converte DATA para string
     DataToString(dataCheckOut, dataCheckOutStr, false); // Certifique-se de que esta função insere a data no formato correto
 
@@ -381,7 +381,7 @@ void finalizarHospedagem(int idReserva, double precoTotal)
         sscanf(linha, "%d;", &id);
         if (id == idReserva)
         {
-            sscanf(linha, "%d;%14[^;];%10[^;];", &id, cpfCliente, dataCheckInStr);
+            sscanf(linha, "%d;%11[^;];%10[^;];", &id, cpfCliente, dataCheckInStr);
             snprintf(linhaAtualizada, sizeof(linhaAtualizada), "%d;%s;%s;%s;Finalizada;%.2f\n",
                      idReserva, cpfCliente, dataCheckInStr, dataCheckOutStr, precoTotal);
 
