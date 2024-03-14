@@ -90,6 +90,7 @@ void novoquarto() {
 
 }
 
+
 void alteraquarto() {
     int codquarto;
     printf("Informe o codigo do quarto que deseja alterar: ");
@@ -109,16 +110,27 @@ void alteraquarto() {
         sscanf(linha, "%d", &codigo_quarto);
         if (codigo_quarto == codquarto) {
             // Se encontrarmos o quarto, permitimos a alteração
+            int camas_solteiro;
+            int camas_casal;
+            char tipo_quarto[20]; // Aumente o tamanho do array para acomodar "SINGLE", "DUPLO" ou "TRIPLO"
+            float preco_diario;
+            char status[2]; // "A" ou "I" (Ativo ou Inativo)
 
-            printf("Digite o novo codigo do quarto: ");
-            scanf("%d", &codigo_quarto);
+            sscanf(linha, "%d;%d;%d;%[^;];%f;%s", &codigo_quarto, &camas_solteiro, &camas_casal, tipo_quarto, &preco_diario, status);
 
+            printf("Digite a quantidade de camas de solteiro: ");
+            scanf("%d", &camas_solteiro);
 
+            printf("Digite a quantidade de camas de casal: ");
+            scanf("%d", &camas_casal);
+
+            printf("Digite o tipo de quarto (SINGLE/DUPLO/TRIPLO): ");
+            scanf("%s", tipo_quarto);
 
             fseek(arquivoquarto, posicao_inicial, SEEK_SET);
 
             // Escrevemos os dados atualizados do quarto no arquivo
-            fprintf(arquivoquarto, "%d\n", codigo_quarto);
+            fprintf(arquivoquarto, "%d;%d;%d;%s;%f;%s\n", codquarto, camas_solteiro, camas_casal, tipo_quarto, preco_diario, status);
             printf("Quarto com codigo %d alterado com sucesso.\n", codquarto);
             fclose(arquivoquarto);
             return;
@@ -129,6 +141,7 @@ void alteraquarto() {
     printf("Quarto com codigo %d não encontrado.\n", codquarto);
     fclose(arquivoquarto);
 }
+
 void criarArquivoq() {
 	//verica se o arquivo ja existi
      FILE *arquivoq = fopen("quartos.csv", "w");
@@ -148,11 +161,6 @@ int codigo_quarto;
     char tipo_quarto[6];
     double preco_diaria;
     char status[1];
-
-
-
-
-
 
 }
 

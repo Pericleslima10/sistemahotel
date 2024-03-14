@@ -6,7 +6,7 @@
 
 typedef struct {
     int codigo_reserva;
-    char cpf_reserva[12];
+    char cpf_reserva[13];
     int data_checkin;
     int data_checkout;
     char tipo_quarto[6];
@@ -16,10 +16,17 @@ typedef struct {
 
 void carregarClientes();
 void criarArquivoReservas();
+int gerarNumReserva();
 void verificarCpf();
-void fazerReserva();
+void fazerReserva(char *cpf);
 void mostrarQuartos();
 void cancelarReserva();
-void buscarReservas();
+// void buscarReservas();
+// void buscarReservaPorCPF() ;
+Reserva encontrar_reserva_por_cpf(char cpf[], FILE *file);
+
+
+
+
 void reservas();
 #endif 

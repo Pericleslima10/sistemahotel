@@ -5,7 +5,7 @@
 #include "cliente.h"
 #include "quartos.h"
 #define TAM_MAXIMO 100
-#define TAM_CPF 12
+#define MAX_BUFFER_SIZE 1024
 
 // Array para armazenar os clientes
 Cliente clientesteste[TAM_MAXIMO];
@@ -43,7 +43,34 @@ void reservas(){
             cancelarReserva();
                 break;
             case 4:
-                buscarReservas();
+
+               FILE *file;
+            char cpf[13];
+
+            printf("Por favor, digite o CPF da reserva: ");
+            scanf("%s", cpf);
+
+            file = fopen("reservas.csv", "r");
+            if (file == NULL) {
+                printf("Erro ao abrir o arquivo de reservas.\n");
+                
+            }
+
+    Reserva reserva_encontrada = encontrar_reserva_por_cpf(cpf, file);
+    if (reserva_encontrada.codigo_reserva != -1) {
+        printf("Reserva encontrada:\n");
+        printf("Código Reserva: %d\n", reserva_encontrada.codigo_reserva);
+        printf("CPF Reserva: %s\n", reserva_encontrada.cpf_reserva);
+        printf("Data Check-in: %d\n", reserva_encontrada.data_checkin);
+        printf("Data Check-out: %d\n", reserva_encontrada.data_checkout);
+        printf("Tipo de Quarto: %s\n", reserva_encontrada.tipo_quarto);
+        printf("Código do Quarto: %d\n", reserva_encontrada.codigo_quarto);
+    } else {
+        printf("Nenhuma reserva encontrada para o CPF fornecido.\n");
+    }
+
+    fclose(file);
+
                 break;
             case 9:
                 printf("Encerrando o programa...\n");
@@ -74,7 +101,7 @@ void carregarClientes() {
 
 // Função para fazer uma reserva
 void verificarCpf() {
-    char cpf[TAM_CPF];
+    char cpf[13];
     printf("Digite o CPF do cliente: ");
     scanf("%s", cpf);
 
@@ -87,7 +114,7 @@ void verificarCpf() {
     int cliente_encontrado = 0; // Variável para indicar se o cliente foi encontrado
 
     // Verifica se o CPF existe no arquivo
-    char cpf_arquivo[TAM_CPF];
+    char cpf_arquivo[13];
     while (fscanf(arquivo, "%*[^;];%[^;];%*d;%*d;%*[^;];%*[^;];%*s\n", cpf_arquivo) != EOF) {
         if (strcmp(cpf, cpf_arquivo) == 0) {
             cliente_encontrado = 1;
@@ -101,33 +128,34 @@ void verificarCpf() {
 
     if (cliente_encontrado) {
 
-        fazerReserva();
+        fazerReserva(cpf);
 
     } else {
         printf("Cliente não encontrado.\n");
     }
 }
+
 void criarArquivoReservas() {
 	//verica se o arquivo ja existi
-    FILE *arquivo = fopen("reservas.csv", "w");
-    if (arquivo == NULL) {
+    FILE *arquivoreservas = fopen("reservas.csv", "w");
+    if (arquivoreservas == NULL) {
         printf("Erro ao criar o arquivo.\n");//indica o retorno da função fopen se for null erro ao criar o arquivo
         exit(1);
     }
-    fprintf(arquivo, "CODIGO RESERVA;CPF CLIENTE;DATA CHECKIN;DATA CHECKOUT;TIPO QUARTO;CODIGO QUARTO\n");//
-    fclose(arquivo);
+    fprintf(arquivoreservas, "CODIGO RESERVA;CPF CLIENTE;DATA CHECKIN;DATA CHECKOUT;TIPO QUARTO;CODIGO QUARTO\n");//
+    fclose(arquivoreservas);
     
 }
 
-void fazerReserva() {
+int gerarNumReserva() {
+    srand(time(NULL)); // Inicializa a semente do gerador de números aleatórios com o tempo atual
+    return rand(); // Retorna um número aleatório
+}
+
+void fazerReserva(char *cpf) {
     Reserva reserva;
+    reserva.codigo_reserva = gerarNumReserva() / 100000;
 
-
-    printf(" Digite o codigo da reserva: \n");
-    scanf("%d", &reserva.codigo_reserva);
-    
-    printf("Digite o cpf do cliente CPF: \n");
-    scanf("%s", reserva.cpf_reserva);
     
     printf("Digite a data de checkin \n");
     scanf("%d", &reserva.data_checkin);
@@ -141,8 +169,6 @@ void fazerReserva() {
     printf("Digite o codigo do quarto: \n");
     scanf("%d", &reserva.codigo_quarto);
     
-
-
     // Abre o arquivo para escrita no modo de adição
     FILE *arquivo = fopen("reservas.csv", "a");
     if (arquivo == NULL) {//verifica se é possivel abrir o arquivo
@@ -150,37 +176,19 @@ void fazerReserva() {
         exit(1);
     }
     // Escreve os dados do cliente no arquivo
-    fprintf(arquivo, "%d;%s;%d;%d;%s;%d;\n", reserva.codigo_reserva, reserva.cpf_reserva, reserva.data_checkin,
+    fprintf(arquivo, "%d;%s;%d;%d;%s;%d;\n", reserva.codigo_reserva,cpf, reserva.data_checkin,
     reserva.data_checkout,reserva.tipo_quarto,reserva.codigo_quarto);
+    printf("O seu numero da reserva gerado é: %d\n", reserva.codigo_reserva);
+
     fclose(arquivo);
     
-
 }
-
-
-// void mostrarQuartos() {
-//     FILE *arquivoq = fopen("quartos.csv", "r");
-//     if (arquivoq == NULL) {
-//         printf("Erro ao abrir o arquivo de quartos.\n");
-//         exit(1);
-//     }
-
-//     Quarto quarto;
-//     printf("Quartos Disponíveis:\n");
-//     printf("CODIGO QUARTO | CAMAS SOLTEIRO | CAMAS CASAL | TIPO QUARTO | PREÇO DIARIA | STATUS\n");
-//     while (fscanf(arquivoq, "%d;%d;%d;%5s;%lf;%s\n", &quarto.codigo_quarto, &quarto.camas_solteiro, &quarto.camas_casal, quarto.tipo_quarto, &quarto.preco_diaria, quarto.status) == 6) {
-//         printf("%d | %d | %d | %s | %.2lf | %s\n", quarto.codigo_quarto, quarto.camas_solteiro, quarto.camas_casal, quarto.tipo_quarto, quarto.preco_diaria, quarto.status);
-//     }
-    
-//     fclose(arquivoq);
-// }
-
 
 void mostrarQuartos() {
     FILE *arquivoq = fopen("quartos.csv", "r");
     if (arquivoq == NULL) {
         printf("Erro ao abrir o arquivo de quartos.\n");
-        exit(1);
+        criarArquivoq();
     }
 
     Quarto quarto;
@@ -195,12 +203,19 @@ void mostrarQuartos() {
     fclose(arquivoq);
 }
 
-
 // void cancelarReserva() {
 //     int codigo_reserva;
+//     char cpf_cliente[13]; // Aumentei para 15 para incluir o caractere nulo
+//     int checkin;
 
 //     printf("Digite o código da reserva que deseja cancelar: ");
 //     scanf("%d", &codigo_reserva);
+
+//     printf("Digite o CPF do cliente para confirmar o cancelamento: ");
+//     scanf("%s", cpf_cliente);
+
+//     printf("Digite o CPF do cliente para confirmar o cancelamento: ");
+//     scanf("%d", checkin);
 
 //     char temp_file[] = "temporario.csv";
 
@@ -216,16 +231,23 @@ void mostrarQuartos() {
 //     if (arquivo_temporario == NULL) {
 //         printf("Erro ao criar arquivo temporário.\n");
 //         exit(1);
+//     }else{
+//       printf("Cpf ou codigo da reserva invalidos\n");
+//         printf("Digite CPF ou Codigo de reservas existentes !\n");
+
 //     }
 
 //     char linha[100]; // Linha temporária para armazenar cada linha do arquivo
 //     int cod;
+//     char cpf[15]; // Variável para armazenar o CPF lido de cada linha
+//     int data_checkin;
+
 //     // Lê linha por linha do arquivo original
 //     while (fgets(linha, sizeof(linha), arquivo_entrada) != NULL) {
-//         sscanf(linha, "%d;", &cod); // Extrai o código de reserva da linha
+//         sscanf(linha, "%d;%[^;];%d", &cod, cpf,data_checkin); // Extrai o código de reserva e o CPF da linha
 
-//         // Se o código de reserva na linha for diferente do código a ser removido, escreve no arquivo temporário
-//         if (cod != codigo_reserva) {
+//         // Se o código de reserva na linha for diferente do código a ser removido, ou se o CPF não corresponder, escreve no arquivo temporário
+//         if (cod != codigo_reserva || strcmp(cpf, cpf_cliente) != 0 && data_checkin != checkin ) {
 //             fprintf(arquivo_temporario, "%s", linha);
 //         }
 //     }
@@ -244,13 +266,17 @@ void mostrarQuartos() {
 
 void cancelarReserva() {
     int codigo_reserva;
-    char cpf_cliente[12]; // Aumentei para 15 para incluir o caractere nulo
+    char cpf_cliente[15]; // aumentei para 15 para incluir o caractere nulo
+    int checkin;
 
     printf("Digite o código da reserva que deseja cancelar: ");
     scanf("%d", &codigo_reserva);
 
     printf("Digite o CPF do cliente para confirmar o cancelamento: ");
     scanf("%s", cpf_cliente);
+
+    printf("Digite a data de check-in (AAAAMMDD): ");
+    scanf("%d", &checkin);
 
     char temp_file[] = "temporario.csv";
 
@@ -271,12 +297,14 @@ void cancelarReserva() {
     char linha[100]; // Linha temporária para armazenar cada linha do arquivo
     int cod;
     char cpf[15]; // Variável para armazenar o CPF lido de cada linha
+    int data_checkin;
+
     // Lê linha por linha do arquivo original
     while (fgets(linha, sizeof(linha), arquivo_entrada) != NULL) {
-        sscanf(linha, "%d;%[^;];", &cod, cpf); // Extrai o código de reserva e o CPF da linha
+        sscanf(linha, "%d;%[^;];%d", &cod, cpf, &data_checkin); // Extrai o código de reserva e o CPF da linha
 
-        // Se o código de reserva na linha for diferente do código a ser removido, ou se o CPF não corresponder, escreve no arquivo temporário
-        if (cod != codigo_reserva || strcmp(cpf, cpf_cliente) != 0) {
+        // Se o código de reserva na linha for diferente do código a ser removido, ou se o CPF ou a data de check-in não corresponderem, escreve no arquivo temporário
+        if (cod != codigo_reserva || strcmp(cpf, cpf_cliente) != 0 || data_checkin != checkin) {
             fprintf(arquivo_temporario, "%s", linha);
         }
     }
@@ -294,77 +322,23 @@ void cancelarReserva() {
 }
 
 
-// void buscarReservas() {
-//     char cpf_cliente[TAM_CPF];
-//     printf("Digite o CPF do cliente para buscar as reservas: ");
-//     scanf("%s", cpf_cliente);
-//     getchar();
 
-//     FILE *arquivo_reservas = fopen("reservas.csv", "r");
-//     if (arquivo_reservas == NULL) {
-//         printf("Erro ao abrir o arquivo de reservas.\n");
-//         exit(1);
-//     }
 
-//     Reserva reserva;
-//     int encontrou_reserva = 0;
-
-//     printf("\nReservas do cliente com CPF %s:\n", cpf_cliente);
-//     printf("CODIGO RESERVA | CPF CLIENTE | DATA CHECKIN | DATA CHECKOUT | TIPO QUARTO | CODIGO QUARTO\n");
-
-//     // Lê cada linha do arquivo de reservas
-//     while (fscanf(arquivo_reservas, "%d;%[^;];%d;%d;%[^;];%d;\n", &reserva.codigo_reserva, reserva.cpf_reserva,
-//                   &reserva.data_checkin, &reserva.data_checkout, reserva.tipo_quarto, &reserva.codigo_quarto) == 6) {
-//         // Se o CPF na reserva é igual ao CPF fornecido, exibe a reserva
-//         if (strcmp(reserva.cpf_reserva, cpf_cliente) == 0) {
-//             printf("%d | %s | %d | %d | %s | %d\n", reserva.codigo_reserva, reserva.cpf_reserva,
-//                    reserva.data_checkin, reserva.data_checkout, reserva.tipo_quarto, reserva.codigo_quarto);
-//             encontrou_reserva = 1; // Marca que pelo menos uma reserva foi encontrada
-//         }
-//     }
-
-//     // Se nenhuma reserva foi encontrada para o CPF fornecido
-//     if (!encontrou_reserva) {
-//         printf("Nenhuma reserva encontrada para o cliente com CPF %s.\n", cpf_cliente);
-//     }
-
-//     fclose(arquivo_reservas);
-// }
-    
-void buscarReservas() {
-    char cpf_cliente[TAM_CPF];
-    printf("Digite o CPF do cliente para buscar as reservas: ");
-    scanf("%s", cpf_cliente);
-    getchar();
-
-    FILE *arquivo_reservas = fopen("reservas.csv", "r");
-    if (arquivo_reservas == NULL) {
-        printf("Erro ao abrir o arquivo de reservas.\n");
-        exit(1);
-    }
-
+Reserva encontrar_reserva_por_cpf(char cpf[], FILE *file) {
     Reserva reserva;
-    int encontrou_reserva = 0;
+    char buffer[MAX_BUFFER_SIZE];
 
-    printf("\nReservas do cliente com CPF %s:\n", cpf_cliente);
-    printf("CODIGO RESERVA | CPF CLIENTE | DATA CHECKIN | DATA CHECKOUT | TIPO QUARTO | CODIGO QUARTO\n");
+    while (fgets(buffer, MAX_BUFFER_SIZE, file) != NULL) {
+        sscanf(buffer, "%d;%[^;];%d;%d;%[^;];%d",
+               &reserva.codigo_reserva, reserva.cpf_reserva, &reserva.data_checkin,
+               &reserva.data_checkout, reserva.tipo_quarto, &reserva.codigo_quarto);
 
-    // Lê cada linha do arquivo de reservas
-    while (fscanf(arquivo_reservas, "%d;%[^;];%d;%d;%[^;];%d;\n", &reserva.codigo_reserva, reserva.cpf_reserva,
-                  &reserva.data_checkin, &reserva.data_checkout, reserva.tipo_quarto, &reserva.codigo_quarto) == 6) {
-        // Se o CPF na reserva é igual ao CPF fornecido, exibe a reserva
-        if (strcmp(reserva.cpf_reserva, cpf_cliente) == 0) {
-            printf("%d | %s | %d | %d | %s | %d\n", reserva.codigo_reserva, reserva.cpf_reserva,
-                   reserva.data_checkin, reserva.data_checkout, reserva.tipo_quarto, reserva.codigo_quarto);
-            encontrou_reserva = 1; // Marca que pelo menos uma reserva foi encontrada
+        if (strcmp(reserva.cpf_reserva, cpf) == 0) {
+            return reserva;
         }
     }
 
-    // Se nenhuma reserva foi encontrada para o CPF fornecido
-    if (!encontrou_reserva) {
-        printf("Nenhuma reserva encontrada para o cliente com CPF %s.\n", cpf_cliente);
-    }
-
-    fclose(arquivo_reservas);
+    // Retorna uma reserva com cpf -1 se não encontrar
+    reserva.codigo_reserva = -1;
+    return reserva;
 }
-

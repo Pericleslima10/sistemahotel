@@ -139,7 +139,7 @@ void menu_hospedagem()
 
 int buscaReserva(int codigoReserva, Hospedagem *hospedagem)
 {
-    FILE *arquivo = fopen("reserva.csv", "r");
+    FILE *arquivo = fopen("reservas.csv", "r");
     if (!arquivo)
     {
         printf("Arquivo reserva.csv não pode ser aberto.\n");

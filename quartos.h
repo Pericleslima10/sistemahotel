@@ -12,9 +12,6 @@ typedef struct {
     double preco_diaria;
     char status[1];
 } Quarto;
-
-
-
 void quartos();
 void criarArquivoq();
 void novoquarto();
