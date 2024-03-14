@@ -11,6 +11,7 @@ typedef struct {
     DATA data_check_out;     // Data do check-out
     char status[10];         // Status da hospedagem, por exemplo "Ativa" ou "Finalizada"
     double preco_total;      // Preço total da hospedagem
+    int codigo_quarto;           // Identificação do quarto
 } Hospedagem;
 
 void check_in_cliente();
