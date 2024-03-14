@@ -1,8 +1,8 @@
-#include "hospedagem.c"
-#include "tempo.c"
-#include "cliente.c"
-#include "quartos.c"
-#include "reserva.c"
+#include "hospedagem.h"
+#include "tempo.h"
+#include "cliente.h"
+#include "quartos.h"
+#include "reserva.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
