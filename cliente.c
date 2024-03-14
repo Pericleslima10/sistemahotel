@@ -6,10 +6,6 @@
 #include <string.h>
 #define TAM 2
 
-
-
-
-
 void clientes(){
 	
     int numClientes = 0;
@@ -157,7 +153,7 @@ void alterarcliente() {
 		    printf("Digite a cidade do cliente: ");
 		    scanf("%s", cidade);
 		    
-		      printf("Digite a UF do estado do cliente  ");
+		    printf("Digite a UF do estado do cliente  ");
 		    scanf("%s", estado);
 		           
 

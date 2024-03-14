@@ -3,8 +3,6 @@
 #ifndef CLIENTE_H_INCLUDED
 #define CLIENTE_H_INCLUDED
 
-
-
 typedef struct {
     char nome_cliente[50];
     char cpf_cliente[13];
@@ -14,9 +12,6 @@ typedef struct {
     char cidade[100];
     char estado[2];
 } Cliente;
-
-
-
 
 void clientes();
 void novocliente();
