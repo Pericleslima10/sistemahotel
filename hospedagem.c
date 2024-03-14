@@ -60,11 +60,9 @@ void check_out_cliente()
 
 void buscar_hospedagens_cliente()
 {
-    // Implementação para buscar as hospedagens de um cliente
-    // Deve pedir o CPF do cliente e mostrar todas as hospedagens relacionadas
     printf("Buscando hospedagens do cliente.\n");
     printf("Digite o CPF do cliente: ");
-    char cpf[13];
+    char cpf[12];
     scanf("%14s", cpf);
     FILE *arquivo = fopen("hospedagens.csv", "r");
     if (arquivo == NULL)
@@ -112,7 +110,7 @@ void menu_hospedagem()
         printf("\nMenu de Hospedagem\n");
         printf("1. Check-in de cliente\n");
         printf("2. Check-out de cliente\n");
-        printf("3       . Buscar hospedagens do cliente\n");
+        printf("3 .Buscar hospedagens do cliente\n");
         printf("9. Voltar para o menu principal\n");
         printf("Selecione uma opção: ");
         scanf("%d", &opcao);
@@ -153,7 +151,7 @@ int buscaReserva(int codigoReserva, Hospedagem *hospedagem)
     while (fgets(linha, sizeof(linha), arquivo))
     {
         int codigo;
-        char cpf[14]; // Tamanho do CPF com espaço para o terminador nulo
+        char cpf[12]; // Tamanho do CPF com espaço para o terminador nulo
         char data_checkin[11], data_checkout[11], tipo_quarto[10];
         int codigo_quarto;
 
@@ -301,6 +299,7 @@ float obterPrecoDiariaQuarto(int idQuarto)
 
 double calcularPrecoTotal(int idReserva, double diaria)
 {
+    printf("Abrindo o arquivo de hospedagens...\n");
     FILE *arquivo = fopen("hospedagens.csv", "r");
     if (arquivo == NULL)
     {
@@ -308,6 +307,7 @@ double calcularPrecoTotal(int idReserva, double diaria)
         return 0.0;
     }
 
+    printf("Procurando pela reserva com ID %d...\n", idReserva);
     char linha[256];
     int id;
     DATA dataCheckIn, dataCheckOut;
@@ -316,61 +316,79 @@ double calcularPrecoTotal(int idReserva, double diaria)
 
     while (fgets(linha, sizeof(linha), arquivo) != NULL)
     {
-        sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^;];%lf", &id, cpfCliente, dataInStr, dataOutStr, status, &precoTotal);
-        if (id == idReserva)
+        if (sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^;];%lf", &id, cpfCliente, dataInStr, dataOutStr, status, &precoTotal))
         {
-            StringToData(dataInStr, &dataCheckIn);
-            StringToData(dataOutStr, &dataCheckOut);
-            int dias = DataDiff(dataCheckIn, hoje());
-            return precoTotal = dias * diaria;
+            printf("Linha lida: %s\n", linha);
+            if (id == idReserva)
+            {
+                StringToData(dataInStr, &dataCheckIn);
+                dataCheckOut = hoje();       
+                int dias = DataDiff(dataCheckOut, dataCheckIn);
+                precoTotal = dias * diaria;
+                fclose(arquivo);
+                return precoTotal;
+            }
+        }
+        else
+        {
+            printf("Não foi possível ler os dados da linha corretamente.\n");
         }
     }
 
     fclose(arquivo);
+    printf("Nenhuma reserva correspondente encontrada.\n");
     return 0.0;
 }
 
 void finalizarHospedagem(int idReserva, double precoTotal)
 {
+    printf("Iniciando a finalização da hospedagem para a reserva %d.\n", idReserva);
+
     FILE *arquivoLeitura = fopen("hospedagens.csv", "r");
     FILE *arquivoEscrita = fopen("hospedagem_temp.csv", "w");
 
     if (!arquivoLeitura || !arquivoEscrita)
     {
         perror("Erro ao abrir arquivos");
-        exit(1);
+        if (arquivoLeitura)
+            fclose(arquivoLeitura);
+        if (arquivoEscrita)
+            fclose(arquivoEscrita);
+        return;
     }
 
     char linha[256];
     int id;
+    char linhaAtualizada[256]; // Para armazenar a linha modificada
     DATA dataCheckOut = hoje();
     char dataCheckOutStr[11]; // Formato DD/MM/AAAA
-
+    char cpfCliente[14], dataCheckInStr[11];
     // Converte DATA para string
-    DataToString(dataCheckOut, dataCheckOutStr, false);
+    DataToString(dataCheckOut, dataCheckOutStr, false); // Certifique-se de que esta função insere a data no formato correto
 
-    // Lê o arquivo original linha por linha
+    bool isHeader = true; // Supõe que a primeira linha é cabeçalho
+
     while (fgets(linha, sizeof(linha), arquivoLeitura) != NULL)
     {
+        if (isHeader)
+        {
+            // Apenas pula a primeira linha (cabeçalho)
+            fputs(linha, arquivoEscrita); // Copia o cabeçalho para o arquivo temporário
+            isHeader = false;             // Desativa a flag, todas as próximas linhas são dados
+            continue;
+        }
+
         sscanf(linha, "%d;", &id);
         if (id == idReserva)
         {
-            // Substitui a linha pela versão atualizada
-            char *token = strtok(linha, ";"); // ID Reserva
-            fprintf(arquivoEscrita, "%s;", token);
+            sscanf(linha, "%d;%14[^;];%10[^;];", &id, cpfCliente, dataCheckInStr);
+            snprintf(linhaAtualizada, sizeof(linhaAtualizada), "%d;%s;%s;%s;Finalizada;%.2f\n",
+                     idReserva, cpfCliente, dataCheckInStr, dataCheckOutStr, precoTotal);
 
-            for (int i = 0; i < 4; i++)
-            { // Avança até o campo STATUS
-                token = strtok(NULL, ";");
-                fprintf(arquivoEscrita, "%s;", token);
-            }
-
-            // Insere DATA CHECKOUT, STATUS e PREÇO TOTAL
-            fprintf(arquivoEscrita, "%s;Finalizada;%.2f\n", dataCheckOutStr, precoTotal);
+            fputs(linhaAtualizada, arquivoEscrita); // Escreve a linha modificada no arquivo temporário
         }
         else
         {
-            // Copia a linha como está para o arquivo temporário
             fputs(linha, arquivoEscrita);
         }
     }
@@ -378,9 +396,11 @@ void finalizarHospedagem(int idReserva, double precoTotal)
     fclose(arquivoLeitura);
     fclose(arquivoEscrita);
 
-    // Substitui o arquivo original pelo temporário
+    printf("Atualizações finalizadas. Substituindo o arquivo original pelo temporário.\n");
+
+    // Substitui o arquivo original pelo arquivo temporário atualizado
     remove("hospedagens.csv");
     rename("hospedagem_temp.csv", "hospedagens.csv");
 
-    printf("Hospedagem finalizada com sucesso.\n");
+    printf("Hospedagem finalizada com sucesso para a reserva %d.\n", idReserva);
 }
