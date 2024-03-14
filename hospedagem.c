@@ -58,15 +58,15 @@ void check_out_cliente()
     finalizarHospedagem(idReserva, precoTotal);
 }
 
-void buscar_hospedagens_cliente()
-{
+void buscar_hospedagens_cliente() {
     printf("Buscando hospedagens do cliente.\n");
     printf("Digite o CPF do cliente: ");
     char cpf[12];
-    scanf("%14s", cpf);
+    scanf("%11s", cpf); // Ajuste para ler no máximo 11 caracteres
+    getchar(); // Consome o '\n' deixado pelo scanf
+
     FILE *arquivo = fopen("hospedagens.csv", "r");
-    if (arquivo == NULL)
-    {
+    if (arquivo == NULL) {
         printf("Erro ao abrir o arquivo de hospedagens.\n");
         return;
     }
@@ -76,26 +76,26 @@ void buscar_hospedagens_cliente()
     int encontrou = 0;
     char checkIn[11];
     char checkOut[11];
+    char status[20]; // Buffer para status
 
     printf("Hospedagens para o CPF %s:\n", cpf);
-    while (fgets(linha, sizeof(linha), arquivo))
-    {
-        // Assume que a linha tenha o formato correto e não faça verificações de erros
-        sscanf(linha, "%d;%[^;];%[^;];%[^;];%lf\n",
-               &hospedagem.id_reserva, hospedagem.cpf_cliente, checkIn, checkOut, &hospedagem.preco_total);
+    // Pula a linha do cabeçalho
+    fgets(linha, sizeof(linha), arquivo);
+    while (fgets(linha, sizeof(linha), arquivo)) {
+        sscanf(linha, "%d;%11[^;];%10[^;];%10[^;];%19[^;];%lf",
+               &hospedagem.id_reserva, hospedagem.cpf_cliente, checkIn, checkOut, status, &hospedagem.preco_total);
 
-        if (strcmp(hospedagem.cpf_cliente, cpf) == 0)
-        {
+        if (strcmp(hospedagem.cpf_cliente, cpf) == 0) {
             encontrou = 1;
             printf("Reserva ID: %d\n", hospedagem.id_reserva);
             printf("Data de check-in: %s\n", checkIn);
             printf("Data de check-out: %s\n", checkOut);
+            printf("Status: %s\n", status); // Mostra o status
             printf("Valor pago: %.2f\n\n", hospedagem.preco_total);
         }
     }
 
-    if (!encontrou)
-    {
+    if (!encontrou) {
         printf("Nenhuma hospedagem encontrada para o CPF fornecido.\n");
     }
 
@@ -111,7 +111,7 @@ void menu_hospedagem()
         printf("1. Check-in de cliente\n");
         printf("2. Check-out de cliente\n");
         printf("3 .Buscar hospedagens do cliente\n");
-        printf("9. Voltar para o menu principal\n");
+        printf("4. Voltar para o menu principal\n");
         printf("Selecione uma opção: ");
         scanf("%d", &opcao);
         getchar();
@@ -127,7 +127,7 @@ void menu_hospedagem()
         case 3:
             buscar_hospedagens_cliente();
             break;
-        case 9:
+        case 4:
             printf("Retornando ao menu principal...\n");
             break;
         default:
