@@ -10,7 +10,8 @@ typedef struct {
     DATA data_check_in;      // Data do check-in
     DATA data_check_out;     // Data do check-out
     char status[10];         // Status da hospedagem, por exemplo "Ativa" ou "Finalizada"
-    double preco_total;      // Preço total da hospedagem
+    double preco_total;
+    int codigo_quarto;      // Preço total da hospedagem
 } Hospedagem;
 
 void check_in_cliente();
