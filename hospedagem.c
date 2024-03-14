@@ -65,7 +65,7 @@ void buscar_hospedagens_cliente()
     printf("Digite o CPF do cliente: ");
     char cpf[13];
     scanf("%14s", cpf);
-    FILE *arquivo = fopen("hospedagens.csv", "r");
+    FILE *arquivo = fopen("hospedagem.csv", "r");
     if (arquivo == NULL)
     {
         printf("Erro ao abrir o arquivo de hospedagens.\n");
@@ -111,7 +111,7 @@ void menu_hospedagem()
         printf("\nMenu de Hospedagem\n");
         printf("1. Check-in de cliente\n");
         printf("2. Check-out de cliente\n");
-        printf("3. Buscar hospedagens do cliente\n");
+        printf("3       . Buscar hospedagens do cliente\n");
         printf("9. Voltar para o menu principal\n");
         printf("Selecione uma opção: ");
         scanf("%d", &opcao);
@@ -142,7 +142,7 @@ int buscaReserva(int codigoReserva, Hospedagem *hospedagem)
     FILE *arquivo = fopen("reservas.csv", "r");
     if (!arquivo)
     {
-        printf("Arquivo reservas.csv não pode ser aberto.\n");
+        printf("Arquivo reserva.csv não pode ser aberto.\n");
         return 0;
     }
 
@@ -301,7 +301,7 @@ float obterPrecoDiariaQuarto(int idQuarto)
 
 double calcularPrecoTotal(int idReserva, double diaria)
 {
-    FILE *arquivo = fopen("hospedagens.csv", "r");
+    FILE *arquivo = fopen("hospedagem.csv", "r");
     if (arquivo == NULL)
     {
         printf("Não foi possível abrir o arquivo de hospedagens.\n");
@@ -332,7 +332,7 @@ double calcularPrecoTotal(int idReserva, double diaria)
 
 void finalizarHospedagem(int idReserva, double precoTotal)
 {
-    FILE *arquivoLeitura = fopen("hospedagens.csv", "r");
+    FILE *arquivoLeitura = fopen("hospedagem.csv", "r");
     FILE *arquivoEscrita = fopen("hospedagem_temp.csv", "w");
 
     if (!arquivoLeitura || !arquivoEscrita)
@@ -379,8 +379,8 @@ void finalizarHospedagem(int idReserva, double precoTotal)
     fclose(arquivoEscrita);
 
     // Substitui o arquivo original pelo temporário
-    remove("hospedagens.csv");
-    rename("hospedagem_temp.csv", "hospedagens.csv");
+    remove("hospedagem.csv");
+    rename("hospedagem_temp.csv", "hospedagem.csv");
 
     printf("Hospedagem finalizada com sucesso.\n");
 }
